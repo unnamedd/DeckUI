@@ -37,13 +37,21 @@ public struct Media: ContentItem {
                 case .bundleImage(let name):
                     #if canImport(AppKit)
                     let platformImage = PlatformImage(named: name)
+
                     #elseif canImport(UIKit)
-                    let path = Bundle.main.path(forResource: name, ofType: nil)!
-                    let platformImage = PlatformImage(contentsOfFile: path)
+                    guard let path = Bundle.main.path(forResource: name, ofType: nil) else {
+                        fatalError("Content \(name) not found")
+                    }
+
+                    guard let platformImage = PlatformImage(contentsOfFile: path) else {
+                        fatalError("Content for path \"\()\" was not found")
+                    }
+                    
                     #endif
-                    Image(platformImage: platformImage!)
+                    Image(platformImage: platformImage)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
+
                 case .bundleVideo(let name):
                     let url = Bundle.main.url(forResource: name, withExtension: nil)!
                     let player = AVPlayer(url: url)
